@@ -1,0 +1,11 @@
+a.exe
+a.pdb
+
+lib.dll
+lib.pdb
+lib.lib
+lib.dll.*
+lib.pdb.*
+
+auto_build.exe
+auto_build.pdb
