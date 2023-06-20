@@ -1,3 +1,5 @@
+.vscode
+
 a.exe
 a.pdb
 
@@ -6,6 +8,10 @@ lib.pdb
 lib.lib
 lib.dll.*
 lib.pdb.*
+
+common.dll
+common.pdb
+common.lib
 
 auto_build.exe
 auto_build.pdb

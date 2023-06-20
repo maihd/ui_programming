@@ -13,6 +13,7 @@
 #define HotDylib_CountOf(x) (sizeof(x) / sizeof((x)[0]))
 
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
@@ -31,7 +32,7 @@
 #   define HOTDYLIB_FINALLY(lib)  HotDylib_SEHEnd(lib); if (1)
 #endif
 
- /* Undocumented, should not call by hand */
+/* Undocumented, should not call by hand */
 HOTDYLIB_API bool   HotDylib_SEHBegin(HotDylib* lib);
 
 /* Undocumented, should not call by hand */
@@ -39,17 +40,17 @@ HOTDYLIB_API void   HotDylib_SEHEnd(HotDylib* lib);
 
 typedef struct
 {
-    void* library;
+    void*       library;
 
-    long  libTime;
-    char  libRealPath[HOTDYLIB_MAX_PATH];
-    char  libTempPath[HOTDYLIB_MAX_PATH];
+    int64_t     libTime;
+    char        libRealPath[HOTDYLIB_MAX_PATH];
+    char        libTempPath[HOTDYLIB_MAX_PATH];
 
 #if defined(_MSC_VER) && HOTDYLIB_PDB_UNLOCK
-    long  pdbTime;
+    int64_t     pdbTime;
 
-    char  pdbRealPath[HOTDYLIB_MAX_PATH];
-    char  pdbTempPath[HOTDYLIB_MAX_PATH];
+    char        pdbRealPath[HOTDYLIB_MAX_PATH];
+    char        pdbTempPath[HOTDYLIB_MAX_PATH];
 #endif
 } HotDylibData;
 
@@ -65,10 +66,10 @@ typedef struct
 
 static const char* Dylib_GetError(void)
 {
-    static int  error;
-    static char buffer[256];
+    static DWORD    error;
+    static char     buffer[1024];
 
-    int last_error = GetLastError();
+    DWORD last_error = GetLastError();
     if (last_error != error)
     {
         error = last_error;
@@ -78,6 +79,7 @@ static const char* Dylib_GetError(void)
             MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
             buffer, sizeof(buffer), NULL);
     }
+
     return buffer;
 }
 #elif (__unix__)
@@ -546,7 +548,7 @@ bool HotDylibUnlocked(HotDylib* lib)
 }
 #endif
 
-# else
+# else // MINGW
 typedef struct SehFilter
 {
     int                             ref;
@@ -658,6 +660,15 @@ bool HotDylibUnlocked(HotDylib* lib)
 #elif defined(__unix__)
 #   include <sys/stat.h>
 #   include <sys/types.h>
+
+typedef struct SehFilter
+{
+    int                             ref;
+    HotDylib*                       lib;
+} SehFilter;
+
+static SehFilter    s_filterStack[128];
+static int          s_filterStackPointer = -1;
 
 const int HotDylib_Signals[] = { SIGBUS, SIGSYS, SIGILL, SIGSEGV, SIGABRT };
 
