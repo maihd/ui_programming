@@ -1,10 +1,15 @@
 #pragma once
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #ifndef COMMON_API
 #define COMMON_API __declspec(dllimport)
 #endif
+
+#define ARENA_DEFAULT_HEAD_POSITION (64)
+#define ARENA_DEFAULT_SIZE_COMMITED (64 << 10)
+#define ARENA_DEFAULT_SIZE_RESERVED (64 << 20)
 
 typedef struct Arena Arena;
 struct Arena
@@ -12,14 +17,15 @@ struct Arena
     Arena*  prev;
     Arena*  current;
     
+    int32_t origin;
     int32_t position;
     int32_t capacity;
     int32_t committed;
     int32_t alignment;
 };
 
-COMMON_API Arena*   Arena_Create(void);
-COMMON_API Arena*   Arena_Create2(int32_t committed, int32_t reserved);
+COMMON_API Arena*   Arena_Create(int32_t committed, int32_t reserved);
+COMMON_API Arena*   Arena_CreateDefault(void);
 COMMON_API void     Arena_Destroy(Arena* arena);
 
 COMMON_API void*    Arena_Acquire(Arena* arena, int32_t size);
