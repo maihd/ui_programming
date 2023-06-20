@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 
 #include <Windows.h>
@@ -17,14 +18,19 @@ int main(int argc, const char* argv[])
 		useGMake = 1;
 	}
 
-	HotDylibFileTime dir = { 0, "lib.c" };
- 	HotDylibWatchFiles(&dir, 1); // Initialize
+	HotDylibFileTime files[] = {
+		{ 0, "lib.c" },
+		{ 0, "ui.h" },
+		{ 0, "ui.c" },
+	};
+	const int32_t fileCount = sizeof(files) / sizeof(files[0]);
+ 	HotDylibWatchFiles(files, fileCount); // Initialize
 
 	while (1)
 	{
-		if (HotDylibWatchFiles(&dir, 1))
+		if (HotDylibWatchFiles(files, fileCount))
 		{	
-			printf("Find lib.c changed, recompile dll...\n");
+			printf("Files changed, recompile dll...\n");
 			if (useGMake)
 			{
 				system("make dll");
@@ -35,7 +41,7 @@ int main(int argc, const char* argv[])
 			}
 
 			// Ignore further changed
-			HotDylibWatchFiles(&dir, 1); 
+			HotDylibWatchFiles(files, fileCount); 
 		}
 
 		Sleep(16);

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <raylib.h>
+#include "common.h"
 #include "HotDylib.h"
 
 int main()

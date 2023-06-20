@@ -853,7 +853,7 @@ static bool HotDylib_CallMain(HotDylib* lib, void* library, HotDylibState newSta
 #else
         HOTDYLIB_TRY(lib)
         {
-            lib->userdata = func(lib->userdata, lib->state, newState);
+            lib->userdata = func(lib->userdata, newState, lib->state);
         }
         HOTDYLIB_EXCEPT(lib)
         {
@@ -861,7 +861,7 @@ static bool HotDylib_CallMain(HotDylib* lib, void* library, HotDylibState newSta
         }
         HOTDYLIB_FINALLY(lib)
         {
-            /*null statement*/
+            /*noop statement*/
         }
 #endif
     }

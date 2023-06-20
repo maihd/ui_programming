@@ -55,12 +55,15 @@ Arena* Arena_CreateDefault(void)
 
 void Arena_Destroy(Arena* arena)
 {
-    Arena* destroyingArena = arena->current;
-    while (destroyingArena)
+    if (arena)
     {
-        Arena* prevArena = destroyingArena->prev;
-        Memory_Release(destroyingArena);
-        destroyingArena = prevArena;
+        Arena* destroyingArena = arena->current;
+        while (destroyingArena)
+        {
+            Arena* prevArena = destroyingArena->prev;
+            Memory_Release(destroyingArena);
+            destroyingArena = prevArena;
+        }   
     }
 }
 
@@ -118,4 +121,15 @@ void Arena_Clear(Arena* arena)
 {
     assert(arena != NULL);
     arena->current->position = ARENA_DEFAULT_HEAD_POSITION;
+}
+
+Arena* Arena_GetScratch(void)
+{
+    static __thread Arena* scratch = NULL;
+    if (scratch == NULL)
+    {
+        scratch = Arena_CreateDefault();
+    } 
+
+    return scratch;
 }
