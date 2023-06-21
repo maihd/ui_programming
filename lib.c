@@ -15,10 +15,21 @@ typedef struct LibState
 
 static LibState* g_state = NULL;
 
+static LibState* CreateLibState(Arena* arena)
+{
+    LibState* state = (LibState*)Arena_Acquire(arena, sizeof(LibState));
+    state->hotReloadCount = 0;
+    state->arena = arena;
+    state->context = UIContext_Create(state->arena);
+    return state;
+}
+
 HOTDYLIB_EXPORT 
 LibState* LibEntry(LibState* state, HotDylibState newState, HotDylibState oldState)
 {
     TraceLog(LOG_INFO, "LibEntry, state = %p", state);
+
+    Arena* arena = Arena_GetScratch();
 
     switch (newState)
     {
@@ -28,16 +39,12 @@ LibState* LibEntry(LibState* state, HotDylibState newState, HotDylibState oldSta
             if (state != NULL)
             {
                 state->hotReloadCount = 0;
-                state->context = NULL;
+                state->context = UIContext_Create(state->arena);
                 state->arena = Arena_GetScratch();
             }
             else
             {
-                Arena* arena = Arena_GetScratch();
-                state = (LibState*)Arena_Acquire(arena, sizeof(LibState));
-                state->hotReloadCount = 0;
-                state->arena = arena;
-                state->context = NULL;
+                state = CreateLibState(arena);
             }
             g_state = state;
             break;
@@ -45,10 +52,20 @@ LibState* LibEntry(LibState* state, HotDylibState newState, HotDylibState oldSta
         case HOTDYLIB_RELOAD:
             TraceLog(LOG_INFO, "LibEntry: enter reload");
             g_state = state;
+            Arena_Clear(arena);
             if (state != NULL)
             {
                 state->hotReloadCount++;
                 TraceLog(LOG_INFO, "Arena have been created, reload count = %d!", state->hotReloadCount);
+            
+                if (state->context == NULL)
+                {
+                    state->context = UIContext_Create(state->arena);
+                }
+            }
+            else
+            {
+                state = CreateLibState(arena);
             }
             break;
 
@@ -77,6 +94,17 @@ HOTDYLIB_EXPORT void Update(float dt)
     if (g_state)
     {
         UIContext_NewFrame(g_state->context);
+        {
+            if (UIButton(g_state->context, "Click Me!"))
+            {
+                TraceLog(LOG_INFO, "Clicked ME!");
+            }
+
+            if (UIButton(g_state->context, "Click Me Too!"))
+            {
+                TraceLog(LOG_INFO, "Clicked ME too!");
+            }
+        }
         UIContext_EndFrame(g_state->context);
     }
 }
@@ -89,7 +117,7 @@ HOTDYLIB_EXPORT void Draw()
     {
         UIContext_Render(g_state->context);
     }
-    
+
     const char* text;
     if (g_state != NULL)
     {

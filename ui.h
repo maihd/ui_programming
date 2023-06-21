@@ -1,12 +1,29 @@
 #pragma once
 
 #include <stdint.h>
+#include <raylib.h>
+#include "common.h"
+
+typedef struct UIDrawCommand
+{
+    const char* text;
+    Rectangle   rect;
+} UIDrawCommand;
 
 typedef struct UIContext
 {
-    uint8_t padding[4];
+    Arena*          arena;
+
+    UIDrawCommand*  drawCommands;
+    int32_t         drawCommandCount;
+    int32_t         drawCommandCapacity;
 } UIContext;
 
-void UIContext_NewFrame(UIContext* context);
-void UIContext_EndFrame(UIContext* context);
-void UIContext_Render(UIContext* context);
+UIContext*  UIContext_Create(Arena* arena);
+void        UIContext_Destroy(UIContext* context);
+
+void        UIContext_NewFrame(UIContext* context);
+void        UIContext_EndFrame(UIContext* context);
+void        UIContext_Render(UIContext* context);
+
+bool        UIButton(UIContext* context, const char* string);
