@@ -12,7 +12,9 @@ UIContext* UIContext_Create(Arena* arena)
         .arena = arena,
         .drawCommands = NULL,
         .drawCommandCount = 0,
-        .drawCommandCapacity = 0
+        .drawCommandCapacity = 0,
+
+        .font = LoadFont("assets/ubuntu-font-family-0.83/Ubuntu-R.ttf"),
     };
     return context;
 }
@@ -43,23 +45,28 @@ void UIContext_Render(UIContext* context)
             UIDrawCommand command = commands[i];
             if (command.active)
             {
-                DrawRectangleRec(command.rect, WHITE);
+                DrawRectangleRounded(command.rect, 0.5f, 10, WHITE);
             }
             else if (command.hover)
             {
-                DrawRectangleLinesEx(command.rect, 3.0f, WHITE);
+                DrawRectangleRoundedLines(command.rect, 0.5f, 10, 3.0f, WHITE);
             }
             else
             {
-                DrawRectangleLinesEx(command.rect, 1.0f, WHITE);
+                DrawRectangleRoundedLines(command.rect, 0.5f, 10, 1.0f, WHITE);
             }
 
-            int textWidth = MeasureText(command.text, 16);
-            DrawText(
-                command.text, 
-                command.rect.x + (command.rect.width - textWidth) / 2, 
-                command.rect.y + (command.rect.height - 8) / 2, 
-                16, 
+            float fontSize = 24.0f;
+            Vector2 textSize = MeasureTextEx(context->font, command.text, fontSize, 0.0f);
+            DrawTextEx(
+                context->font,
+                command.text,
+                (Vector2){
+                    .x = command.rect.x + (command.rect.width - textSize.x) / 2, 
+                    .y = command.rect.y + (command.rect.height - textSize.y) / 2, 
+                },
+                fontSize,
+                0.0f,
                 WHITE
             );
         }

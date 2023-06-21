@@ -21,6 +21,7 @@ With Windows batch:
 - Raysan5 and His raylib
 - Zig community
 - Ryan Fleury and His great UI series
+- Canonical Ltd to provide free to use Ubuntu font family
 
 ## License
 NO LICENSE and COPYRIGHTS.

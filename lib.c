@@ -121,7 +121,7 @@ HOTDYLIB_EXPORT void Draw()
     const char* text;
     if (g_state != NULL)
     {
-        text = TextFormat("Hello world HMS %d!", g_state->hotReloadCount);
+        text = TextFormat("Reload Count %d!", g_state->hotReloadCount);
     }
     else
     {

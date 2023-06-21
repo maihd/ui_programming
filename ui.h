@@ -22,6 +22,8 @@ typedef struct UIContext
     UIDrawCommand*  drawCommands;
     int32_t         drawCommandCount;
     int32_t         drawCommandCapacity;
+
+    Font            font;
 } UIContext;
 
 UIContext*  UIContext_Create(Arena* arena);
