@@ -100,10 +100,10 @@ HOTDYLIB_EXPORT void Update(float dt)
                 TraceLog(LOG_INFO, "Clicked ME!");
             }
 
-            if (UIButton(g_state->context, "Click Me Too!"))
-            {
-                TraceLog(LOG_INFO, "Clicked ME too!");
-            }
+            // if (UIButton(g_state->context, "Click Me Too!"))
+            // {
+            //     TraceLog(LOG_INFO, "Clicked ME too!");
+            // }
         }
         UIContext_EndFrame(g_state->context);
     }

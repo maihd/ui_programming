@@ -1,6 +1,8 @@
 #pragma once
 
 #include <stdint.h>
+#include <stdbool.h>
+
 #include <raylib.h>
 #include "common.h"
 
@@ -8,6 +10,9 @@ typedef struct UIDrawCommand
 {
     const char* text;
     Rectangle   rect;
+
+    bool        hover;
+    bool        active;
 } UIDrawCommand;
 
 typedef struct UIContext

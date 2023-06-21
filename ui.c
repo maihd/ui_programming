@@ -41,13 +41,47 @@ void UIContext_Render(UIContext* context)
         for (int32_t i = 0, n = context->drawCommandCount; i < n; i++)
         {
             UIDrawCommand command = commands[i];
-            DrawRectangleRec(command.rect, WHITE);
+            if (command.active)
+            {
+                DrawRectangleRec(command.rect, WHITE);
+            }
+            else if (command.hover)
+            {
+                DrawRectangleLinesEx(command.rect, 3.0f, WHITE);
+            }
+            else
+            {
+                DrawRectangleLinesEx(command.rect, 1.0f, WHITE);
+            }
+
+            int textWidth = MeasureText(command.text, 16);
+            DrawText(
+                command.text, 
+                command.rect.x + (command.rect.width - textWidth) / 2, 
+                command.rect.y + (command.rect.height - 8) / 2, 
+                16, 
+                WHITE
+            );
         }
     }
 }
 
 bool UIButton(UIContext* context, const char* text)
 {
+    const Rectangle rect = {
+        .x = 100,
+        .y = 100,
+        .width = 200,
+        .height = 60
+    };
+
+    const int mouseX = GetMouseX();
+    const int mouseY = GetMouseY();
+    const bool hover = !(mouseX < rect.x || mouseX > (rect.x + rect.width) || mouseY < rect.y || mouseY > (rect.y + rect.height));
+    const bool clicked = hover && IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
+
+    // Add command
+
     if (context)
     {
         if (context->drawCommandCount + 1 > context->drawCommandCapacity)
@@ -68,14 +102,11 @@ bool UIButton(UIContext* context, const char* text)
 
         context->drawCommands[context->drawCommandCount++] = (UIDrawCommand){
             .text = text,
-            .rect = {
-                .x = 100,
-                .y = 100,
-                .width = 200,
-                .height = 60
-            }
+            .rect = rect,
+            .hover = hover,
+            .active = hover && IsMouseButtonDown(MOUSE_BUTTON_LEFT)
         };
     }
 
-    return false;
+    return clicked;
 }
