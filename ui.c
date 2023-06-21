@@ -23,6 +23,7 @@ void UIContext_NewFrame(UIContext* context)
 {
     if (context)
     {
+        context->uid = 0;
         context->drawCommandCount = 0;
     }
 }
