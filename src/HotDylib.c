@@ -5,6 +5,10 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 
+#ifndef HOTDYLIB_DEBUG_LOG
+#define HOTDYLIB_DEBUG_LOG(fmt, ...) printf(fmt "\n", ##__VA_ARGS__)
+#endif
+
 #ifndef HOTDYLIB_PDB_UNLOCK
 #define HOTDYLIB_PDB_UNLOCK 1
 #endif
@@ -19,24 +23,12 @@
 #include <assert.h>
 #include <setjmp.h>
 #include <signal.h>
-
+#include <stdbool.h>
 #include "HotDylib.h"
 
-#if defined(__MINGW32__) || (defined(_WIN32) && defined(__clang__))
-#   define HOTDYLIB_TRY(lib)      if (HotDylib_SEHBegin(lib))
-#   define HOTDYLIB_EXCEPT(lib)   else
-#   define HOTDYLIB_FINALLY(lib)  HotDylib_SEHEnd(lib); if (1)
-#elif (__unix__) || defined(__linux__) || defined(__APPLE__)
-#   define HOTDYLIB_TRY(lib)      if (HotDylib_SEHBegin(lib) && sigsetjmp((lib)->jumpPoint) == 0)
-#   define HOTDYLIB_EXCEPT(lib)   else
-#   define HOTDYLIB_FINALLY(lib)  HotDylib_SEHEnd(lib); if (1)
+#ifdef   HOTDYLIB_EXTRA_INCLUDES
+#include HOTDYLIB_EXTRA_INCLUDES
 #endif
-
-/* Undocumented, should not call by hand */
-HOTDYLIB_API bool   HotDylib_SEHBegin(HotDylib* lib);
-
-/* Undocumented, should not call by hand */
-HOTDYLIB_API void   HotDylib_SEHEnd(HotDylib* lib);
 
 typedef struct
 {
@@ -54,8 +46,35 @@ typedef struct
 #endif
 } HotDylibData;
 
+// --------------------------------------------------
+// Custom exception handler
+// to catch exception from guest library
+// --------------------------------------------------
 
-/* Define dynamic library loading API */
+#if defined(_MSC_VER)
+#   define HOTDYLIB_TRY(lib)      __try
+#   define HOTDYLIB_EXCEPT(lib)   __except (HotDylib_SEHFilter(lib, GetExceptionCode()))
+#   define HOTDYLIB_FINALLY(lib)  if (1)
+#elif defined(__MINGW32__) || (defined(_WIN32) && defined(__clang__))
+#   define HOTDYLIB_TRY(lib)      if (HotDylib_SEHBegin(lib))
+#   define HOTDYLIB_EXCEPT(lib)   else
+#   define HOTDYLIB_FINALLY(lib)  HotDylib_SEHEnd(lib); if (1)
+#elif (__unix__) || defined(__linux__) || defined(__APPLE__)
+#   define HOTDYLIB_TRY(lib)      if (HotDylib_SEHBegin(lib) && sigsetjmp((lib)->jumpPoint) == 0)
+#   define HOTDYLIB_EXCEPT(lib)   else
+#   define HOTDYLIB_FINALLY(lib)  HotDylib_SEHEnd(lib); if (1)
+#endif
+
+/* Undocumented, should not call by hand */
+static bool HotDylib_SEHBegin(HotDylib* lib);
+
+/* Undocumented, should not call by hand */
+static void HotDylib_SEHEnd(HotDylib* lib);
+
+// --------------------------------------------------
+// Define dynamic library loading API
+// --------------------------------------------------
+
 #if defined(_WIN32)
 #   define WIN32_LEAN_AND_MEAN
 #   include <Windows.h>
@@ -94,8 +113,10 @@ static const char* Dylib_GetError(void)
 #  error "Unsupported platform"
 #endif
 
+// --------------------------------------------------
+// Custom helper functions
+// --------------------------------------------------
 
-/** Custom helper functions **/
 #if defined(_WIN32)
 
 static long HotDylib_FileTimeToLong(FILETIME fileTime)
@@ -397,9 +418,11 @@ static int HotDylib_GetPdbPath(const char* libpath, char* buf, int len)
 }
 #  endif /* HOTDYLIB_PDB_UNLOCK */
 
-#if HOTDYLIB_USE_SEH
-static int HotDylib_SEHFilter(HotDylib* lib, int exception)
+#if 1 || HOTDYLIB_USE_SEH
+static int HotDylib_SEHFilter(HotDylib* lib, DWORD exception)
 {
+    HOTDYLIB_DEBUG_LOG("HotDylib_SEHFilter, Exception code: %lu", exception);
+
     HotDylibError error = HOTDYLIB_ERROR_NONE;
 
     switch (exception)
@@ -411,30 +434,37 @@ static int HotDylib_SEHFilter(HotDylib* lib, int exception)
     case EXCEPTION_FLT_INEXACT_RESULT:
     case EXCEPTION_FLT_DENORMAL_OPERAND:
     case EXCEPTION_FLT_INVALID_OPERATION:
+        HOTDYLIB_DEBUG_LOG("HotDylib_SEHFilter, HOTDYLIB_ERROR_FLOAT");
         error = HOTDYLIB_ERROR_FLOAT;
         break;
 
     case EXCEPTION_ACCESS_VIOLATION:
+        HOTDYLIB_DEBUG_LOG("HotDylib_SEHFilter, HOTDYLIB_ERROR_SEGFAULT");
         error = HOTDYLIB_ERROR_SEGFAULT;
         break;
 
     case EXCEPTION_ILLEGAL_INSTRUCTION:
+        HOTDYLIB_DEBUG_LOG("HotDylib_SEHFilter, HOTDYLIB_ERROR_ILLCODE");
         error = HOTDYLIB_ERROR_ILLCODE;
         break;
 
     case EXCEPTION_DATATYPE_MISALIGNMENT:
+        HOTDYLIB_DEBUG_LOG("HotDylib_SEHFilter, HOTDYLIB_ERROR_MISALIGN");
         error = HOTDYLIB_ERROR_MISALIGN;
         break;
 
     case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
+        HOTDYLIB_DEBUG_LOG("HotDylib_SEHFilter, HOTDYLIB_ERROR_OUTBOUNDS");
         error = HOTDYLIB_ERROR_OUTBOUNDS;
         break;
 
     case EXCEPTION_STACK_OVERFLOW:
+        HOTDYLIB_DEBUG_LOG("HotDylib_SEHFilter, HOTDYLIB_ERROR_STACKOVERFLOW");
         error = HOTDYLIB_ERROR_STACKOVERFLOW;
         break;
 
     default:
+        HOTDYLIB_DEBUG_LOG("HotDylib_SEHFilter, unknown");
         break;
     }
 
@@ -454,8 +484,10 @@ static SehFilter    s_filterStack[128];
 static int          s_filterStackPointer = -1;
 
 /* Undocumented, should not call by hand */
-static HotDylibError HotDylib_SEHFilter(HotDylib* lib, int exception)
+static HotDylibError HotDylib_SEHFilter(HotDylib* lib, DWORD exception)
 {
+    HOTDYLIB_DEBUG_LOG("HotDylib_SEHFilter, Exception code: %lu", exception);
+    
     HotDylibError error = HOTDYLIB_ERROR_NONE;
 
     switch (exception)
@@ -467,30 +499,37 @@ static HotDylibError HotDylib_SEHFilter(HotDylib* lib, int exception)
     case EXCEPTION_FLT_INEXACT_RESULT:
     case EXCEPTION_FLT_DENORMAL_OPERAND:
     case EXCEPTION_FLT_INVALID_OPERATION:
+        HOTDYLIB_DEBUG_LOG("HotDylib_SEHFilter, HOTDYLIB_ERROR_FLOAT");
         error = HOTDYLIB_ERROR_FLOAT;
         break;
 
     case EXCEPTION_ACCESS_VIOLATION:
+        HOTDYLIB_DEBUG_LOG("HotDylib_SEHFilter, HOTDYLIB_ERROR_SEGFAULT");
         error = HOTDYLIB_ERROR_SEGFAULT;
         break;
 
     case EXCEPTION_ILLEGAL_INSTRUCTION:
+        HOTDYLIB_DEBUG_LOG("HotDylib_SEHFilter, HOTDYLIB_ERROR_ILLCODE");
         error = HOTDYLIB_ERROR_ILLCODE;
         break;
 
     case EXCEPTION_DATATYPE_MISALIGNMENT:
+        HOTDYLIB_DEBUG_LOG("HotDylib_SEHFilter, HOTDYLIB_ERROR_MISALIGN");
         error = HOTDYLIB_ERROR_MISALIGN;
         break;
 
     case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
+        HOTDYLIB_DEBUG_LOG("HotDylib_SEHFilter, HOTDYLIB_ERROR_OUTBOUNDS");
         error = HOTDYLIB_ERROR_OUTBOUNDS;
         break;
 
     case EXCEPTION_STACK_OVERFLOW:
+        HOTDYLIB_DEBUG_LOG("HotDylib_SEHFilter, HOTDYLIB_ERROR_STACKOVERFLOW");
         error = HOTDYLIB_ERROR_STACKOVERFLOW;
         break;
 
     default:
+        HOTDYLIB_DEBUG_LOG("HotDylib_SEHFilter, unknown");
         break;
     }
 
@@ -847,16 +886,6 @@ static bool HotDylib_CallMain(HotDylib* lib, void* library, HotDylibState newSta
     bool res = true;
     if (func)
     {
-#if defined(_MSC_VER)
-        __try
-        {
-            lib->userdata = func(lib->userdata, newState, lib->state);
-        }
-        __except (HotDylib_SEHFilter(lib, GetExceptionCode()))
-        {
-            res = false;
-        }
-#else
         HOTDYLIB_TRY(lib)
         {
             lib->userdata = func(lib->userdata, newState, lib->state);
@@ -869,7 +898,6 @@ static bool HotDylib_CallMain(HotDylib* lib, void* library, HotDylibState newSta
         {
             /*noop statement*/
         }
-#endif
     }
 
     return res;

@@ -86,6 +86,10 @@ LibState* LibEntry(LibState* state, HotDylibState newState, HotDylibState oldSta
             break;
     }
 
+    // test HotDylib handling fatal error
+    // char* null = 0;
+    // *null = 0;
+
     return state;
 }
 

@@ -5,9 +5,6 @@
 
 #pragma once
 
-#include <stdint.h>
-#include <stdbool.h>
-
 #ifndef HOTDYLIB_API
 #define HOTDYLIB_API
 #endif
@@ -16,9 +13,7 @@
 extern "C" {
 #endif
 
-/**
- * HotDylibState
- */
+// HotDylib state code
 typedef enum HotDylibState
 {
     HOTDYLIB_NONE,
@@ -30,9 +25,7 @@ typedef enum HotDylibState
     HOTDYLIB_FAILED,
 } HotDylibState;
 
-/**
- * HotDylib error code
- */
+// HotDylib error code
 typedef enum HotDylibError
 {
     HOTDYLIB_ERROR_NONE,
@@ -46,9 +39,8 @@ typedef enum HotDylibError
     HOTDYLIB_ERROR_STACKOVERFLOW,
 } HotDylibError;
 
-/** 
- * HotDylib
- */
+// HotDylib public structure
+// This structure use fat-pointer pattern
 typedef struct HotDylib
 {
     HotDylibState   state;
@@ -57,36 +49,27 @@ typedef struct HotDylib
     char            entryName[256];
 } HotDylib;
 
-/**
- * Open an hot dynamic library, path can be not exists from open moment
- */
+// Open an hot dynamic library, path can be not exists from open moment
 HOTDYLIB_API HotDylib*      HotDylibOpen(const char* path, const char* entryName);
 
-/**
- * Free usage memory and close opened files by hot dynamic library
- */
+// Free usage memory and close opened files by hot dynamic library
 HOTDYLIB_API void           HotDylibFree(HotDylib* lib);
 
-/**
- * Update lib, check for changed library and reload
- */
+// Update lib, check for changed library and reload
 HOTDYLIB_API HotDylibState  HotDylibUpdate(HotDylib* lib);
 
 // Check if guest library ready to rebuild
 //HOTDYLIB_API bool           HotDylibUnlocked(HotDylib* lib);
 
-/**
- * Get an symbol address from library with symbol's name
- */
+// Get an symbol address from library with symbol's name
 HOTDYLIB_API void*          HotDylibGetSymbol(const HotDylib* lib, const char* symbolName);
 
-/**
- * Get error message of hot dynamic library from last update
- */
+// Get error message of hot dynamic library from last update
 HOTDYLIB_API const char*    HotDylibGetError(const HotDylib* lib);
 
 /* END OF EXTERN "C" */
 #ifdef __cplusplus
 };
 #endif
-    
+
+//! LEAVE AN EMPTY LINE HERE, REQUIRE BY GCC/G++
