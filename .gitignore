@@ -6,12 +6,14 @@ a.pdb
 lib.dll
 lib.pdb
 lib.lib
+lib.exp
 lib.dll.*
 lib.pdb.*
 
 common.dll
 common.pdb
 common.lib
+common.exp
 
-auto_build.exe
-auto_build.pdb
+auto_build_dll.exe
+auto_build_dll.pdb

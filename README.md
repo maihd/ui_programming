@@ -2,7 +2,7 @@
 This attempt to learn the UI Programming for fun and profit. Based on series of Ryan Fleury UI series.
 
 ## Requirements
-- Zig compiler
+- Zig compiler or Clang compiler installed
 - Windows
 - (Optional) GMake
 
@@ -19,7 +19,8 @@ With Windows batch:
 
 ## Acknowledge
 - Raysan5 and His raylib
-- Zig community
+- Zig community (zig cc)
+- LLVM (clang)
 - Ryan Fleury and His great UI series
 - Canonical Ltd to provide free to use Ubuntu font family
 

@@ -1,4 +1,4 @@
-CC=zig cc
+CC=cc
 
 CFLAGS=-fno-sanitize=undefined -Iinclude
 LFLAGS=lib/raylibdll.lib

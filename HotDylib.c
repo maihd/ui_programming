@@ -59,6 +59,8 @@ typedef struct
 #if defined(_WIN32)
 #   define WIN32_LEAN_AND_MEAN
 #   include <Windows.h>
+#   pragma comment(lib, "User32.lib")
+#   pragma comment(lib, "Kernel32.lib")
 
 #   define Dylib_Load(path)         (void*)LoadLibraryA(path)
 #   define Dylib_Free(lib)          FreeLibrary((HMODULE)lib)
@@ -187,7 +189,7 @@ static void HotDylib_UnlockFileFromProcess(ULONG pid, const WCHAR* file)
     GetProcessHandleCount(hProcess, &handleCount);
     for (handleIter = 0, handleCount *= 16; handleIter <= handleCount; handleIter += 4)
     {
-        HANDLE handle = (HANDLE)handleIter;
+        HANDLE handle = (HANDLE)(uintptr_t)handleIter;
 
         HANDLE hCopy; // Duplicate the handle in the current process
         if (!DuplicateHandle(hProcess, handle, hCurProcess, &hCopy, 0, FALSE, DUPLICATE_SAME_ACCESS))
@@ -296,7 +298,7 @@ static bool HotDylib_IsFileLockedFromProcess(ULONG pid, const WCHAR* file)
     GetProcessHandleCount(hProcess, &handleCount);
     for (handleIter = 0, handleCount *= 16; handleIter <= handleCount; handleIter += 4)
     {
-        HANDLE handle = (HANDLE)handleIter;
+        HANDLE handle = (HANDLE)(uintptr_t)handleIter;
 
         HANDLE hCopy; // Duplicate the handle in the current process
         if (!DuplicateHandle(hProcess, handle, hCurProcess, &hCopy, 0, FALSE, DUPLICATE_SAME_ACCESS))
