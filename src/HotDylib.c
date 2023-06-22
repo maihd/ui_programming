@@ -954,6 +954,10 @@ HotDylibState HotDylibUpdate(HotDylib* lib)
             Dylib_Free(library);
             data->library = NULL;
 
+            // Delete temporary library file
+            HotDylib_RemoveFile(data->libTempPath);
+
+            // Handle error
             if (lib->error != HOTDYLIB_ERROR_NONE)
             {
                 lib->state = HOTDYLIB_FAILED;
@@ -965,8 +969,10 @@ HotDylibState HotDylibUpdate(HotDylib* lib)
             }
         }
 
+        // Deprecated behaviour: need to delete after unloaded
+        //HotDylib_RemoveFile(data->libTempPath); /* Remove temp library */
+
         /* Create and load new temp version */
-        HotDylib_RemoveFile(data->libTempPath); /* Remove temp library */
         if (HotDylib_CopyFile(data->libRealPath, data->libTempPath))
         {
             library = Dylib_Load(data->libTempPath);
