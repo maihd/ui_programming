@@ -89,7 +89,8 @@ LibState* LibEntry(LibState* state, HotDylibState newState, HotDylibState oldSta
     return state;
 }
 
-HOTDYLIB_EXPORT void Update(float dt)
+HOTDYLIB_EXPORT 
+void Update(float dt)
 {
     if (g_state)
     {
@@ -109,7 +110,8 @@ HOTDYLIB_EXPORT void Update(float dt)
     }
 }
 
-HOTDYLIB_EXPORT void Draw()
+HOTDYLIB_EXPORT 
+void Draw()
 {
     ClearBackground(BLACK);
 

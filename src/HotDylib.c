@@ -545,8 +545,12 @@ void HotDylib_SEHEnd(HotDylib* lib)
 // Check if guest library ready to rebuild
 bool HotDylibUnlocked(HotDylib* lib)
 {
+#if HOTDYLIB_PDB_UNLOCK
     HotDylibData* data = (HotDylibData*)(lib - 1);
     return HotDylib_IsFileLocked(data->pdbRealPath);
+#else
+    return true;
+#endif
 }
 #endif
 
