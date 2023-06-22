@@ -19,9 +19,9 @@ int main(int argc, const char* argv[])
 	}
 
 	HotDylibFileTime files[] = {
-		{ 0, "lib.c" },
-		{ 0, "ui.h" },
-		{ 0, "ui.c" },
+		{ 0, "src/lib.c" },
+		{ 0, "src/ui.h" },
+		{ 0, "src/ui.c" },
 	};
 	const int32_t fileCount = sizeof(files) / sizeof(files[0]);
  	HotDylibWatchFiles(files, fileCount); // Initialize
