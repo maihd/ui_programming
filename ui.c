@@ -7,14 +7,17 @@
 
 UIContext* UIContext_Create(Arena* arena)
 {
-    UIContext* context = (UIContext*)Arena_Acquire(arena, sizeof(UIContext)); 
+    Font font = LoadFont("assets/ubuntu-font-family-0.83/Ubuntu-R.ttf");
+    SetTextureFilter(font.texture, TEXTURE_FILTER_BILINEAR);
+
+    UIContext* context = (UIContext*)Arena_Acquire(arena, sizeof(UIContext));
     *context = (UIContext){
         .arena = arena,
         .drawCommands = NULL,
         .drawCommandCount = 0,
         .drawCommandCapacity = 0,
 
-        .font = LoadFont("assets/ubuntu-font-family-0.83/Ubuntu-R.ttf"),
+        .font = font,
     };
     return context;
 }

@@ -113,20 +113,16 @@ HOTDYLIB_EXPORT void Draw()
 {
     ClearBackground(BLACK);
 
-    if (g_state)
-    {
-        UIContext_Render(g_state->context);
-    }
-
-    const char* text;
     if (g_state != NULL)
     {
-        text = TextFormat("Reload Count %d!", g_state->hotReloadCount);
-    }
-    else
-    {
-        text = "Hello world HMS!";
-    }
+        // Render UI components
+        UIContext_Render(g_state->context);
 
-    DrawText(text, 10, 10, 16, WHITE);
+        // Render Debug information
+        const char* text = TextFormat("Reload Count %d!", g_state->hotReloadCount);
+        DrawTextEx(g_state->context->font, text, (Vector2){ .x = 10, .y = 10 }, 16.0f, 0.0f, WHITE);
+        
+        const char* fps = TextFormat("FPS: %d", GetFPS());
+        DrawTextEx(g_state->context->font, fps, (Vector2){ .x = 10, .y = 30 }, 16.0f, 0.0f, WHITE);
+    }
 }

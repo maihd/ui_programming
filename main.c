@@ -5,6 +5,7 @@
 
 int main()
 {
+    SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_WINDOW_HIGHDPI | FLAG_VSYNC_HINT);
     InitWindow(800, 600, "UI Programming from Scratch");
     SetTargetFPS(60);
 
