@@ -31,7 +31,7 @@ void UIExprCreateWindow(void)
 
     // Create window object
     printf("UIExprCreateWindow create window object\n");
-    HWND hWnd = CreateWindowA("UIExprWindow", "UI Experimental", WS_OVERLAPPEDWINDOW | WS_VISIBLE, -1, -1, 800, 600, NULL, NULL, NULL, NULL);
+    HWND hWnd = CreateWindowA("UIExprWindow", "UI Experimental", WS_POPUPWINDOW | WS_VISIBLE, -1, -1, 800, 600, NULL, NULL, NULL, NULL);
     if (!hWnd)
     {
         printf("UIExprCreateWindow failed to create window\n");
