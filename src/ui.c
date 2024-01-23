@@ -35,7 +35,7 @@ void UIContext_EndFrame(UIContext* context)
 {
     if (context)
     {
-        
+
     }
 }
 
@@ -66,8 +66,8 @@ void UIContext_Render(UIContext* context)
                 context->font,
                 command.text,
                 (Vector2){
-                    .x = command.rect.x + (command.rect.width - textSize.x) / 2, 
-                    .y = command.rect.y + (command.rect.height - textSize.y) / 2, 
+                    .x = command.rect.x + (command.rect.width - textSize.x) / 2,
+                    .y = command.rect.y + (command.rect.height - textSize.y) / 2,
                 },
                 fontSize,
                 0.0f,
@@ -105,7 +105,7 @@ bool UIButton(UIContext* context, const char* text)
 
             void* newMemory = Arena_Acquire(context->arena, newCapacity * sizeof(UIDrawCommand));
             assert(newMemory != NULL);
-            
+
             memcpy(newMemory, context->drawCommands, context->drawCommandCapacity * sizeof(UIDrawCommand));
             context->drawCommands = newMemory;
             context->drawCommandCapacity = newCapacity;
@@ -121,3 +121,53 @@ bool UIButton(UIContext* context, const char* text)
 
     return clicked;
 }
+
+
+bool UIButtonV(UIContext* context, const char* text, Vector2 position)
+{
+    const Rectangle rect = {
+        .x = position.x,
+        .y = position.y,
+        .width = 200,
+        .height = 60
+    };
+
+    const int mouseX = GetMouseX();
+    const int mouseY = GetMouseY();
+    const bool hover = !(mouseX < rect.x || mouseX > (rect.x + rect.width) || mouseY < rect.y || mouseY > (rect.y + rect.height));
+    const bool clicked = hover && IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
+
+    // Add command
+
+    if (context)
+    {
+        if (context->drawCommandCount + 1 > context->drawCommandCapacity)
+        {
+            int32_t newCapacity = context->drawCommandCapacity * 2;
+            if (newCapacity < 32)
+            {
+                newCapacity = 32;
+            }
+
+            void* newMemory = Arena_Acquire(context->arena, newCapacity * sizeof(UIDrawCommand));
+            assert(newMemory != NULL);
+
+            memcpy(newMemory, context->drawCommands, context->drawCommandCapacity * sizeof(UIDrawCommand));
+            context->drawCommands = newMemory;
+            context->drawCommandCapacity = newCapacity;
+        }
+
+        context->drawCommands[context->drawCommandCount++] = (UIDrawCommand){
+            .text = text,
+            .rect = rect,
+            .hover = hover,
+            .active = hover && IsMouseButtonDown(MOUSE_BUTTON_LEFT)
+        };
+    }
+
+    return clicked;
+}
+
+//! EOF
+
+

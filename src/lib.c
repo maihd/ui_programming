@@ -24,7 +24,7 @@ static LibState* CreateLibState(Arena* arena)
     return state;
 }
 
-HOTDYLIB_EXPORT 
+HOTDYLIB_EXPORT
 LibState* LibEntry(LibState* state, HotDylibState newState, HotDylibState oldState)
 {
     TraceLog(LOG_INFO, "LibEntry, state = %p", state);
@@ -57,7 +57,7 @@ LibState* LibEntry(LibState* state, HotDylibState newState, HotDylibState oldSta
             {
                 state->hotReloadCount++;
                 TraceLog(LOG_INFO, "Arena have been created, reload count = %d!", state->hotReloadCount);
-            
+
                 if (state->context == NULL)
                 {
                     state->context = UIContext_Create(state->arena);
@@ -93,7 +93,7 @@ LibState* LibEntry(LibState* state, HotDylibState newState, HotDylibState oldSta
     return state;
 }
 
-HOTDYLIB_EXPORT 
+HOTDYLIB_EXPORT
 void Update(float dt)
 {
     if (g_state)
@@ -105,16 +105,16 @@ void Update(float dt)
                 TraceLog(LOG_INFO, "Clicked ME!");
             }
 
-            // if (UIButton(g_state->context, "Click Me Too!"))
-            // {
-            //     TraceLog(LOG_INFO, "Clicked ME too!");
-            // }
+            if (UIButtonV(g_state->context, "Click Me Too!", (Vector2){ .x = 100, .y = 200 }))
+            {
+                TraceLog(LOG_INFO, "Clicked ME too!");
+            }
         }
         UIContext_EndFrame(g_state->context);
     }
 }
 
-HOTDYLIB_EXPORT 
+HOTDYLIB_EXPORT
 void Draw()
 {
     ClearBackground(BLACK);
@@ -127,7 +127,7 @@ void Draw()
         // Render Debug information
         const char* text = TextFormat("Reload Count: %d", g_state->hotReloadCount);
         DrawTextEx(g_state->context->font, text, (Vector2){ .x = 10, .y = 10 }, 16.0f, 0.0f, WHITE);
-        
+
         const char* fps = TextFormat("FPS: %d", GetFPS());
         DrawTextEx(g_state->context->font, fps, (Vector2){ .x = 10, .y = 30 }, 16.0f, 0.0f, WHITE);
     }

@@ -24,7 +24,7 @@ typedef struct UIContext
     int32_t         drawCommandCapacity;
 
     Font            font;
-    
+
     int32_t         uid;
     int32_t         widgetsCount;
 
@@ -41,4 +41,8 @@ void        UIContext_NewFrame(UIContext* context);
 void        UIContext_EndFrame(UIContext* context);
 void        UIContext_Render(UIContext* context);
 
-bool        UIButton(UIContext* context, const char* string);
+bool        UIButton(UIContext* context, const char* text);
+bool        UIButtonV(UIContext* context, const char* text, Vector2 position);
+
+//! EOF
+
