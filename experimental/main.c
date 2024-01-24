@@ -1,3 +1,4 @@
+#include <math.h>
 #include <stdio.h>
 
 #define WIN32_LEAN_AND_MEAN
@@ -43,8 +44,65 @@ void UIExprCreateWindow(void)
 
 CALLBACK LRESULT UIExprWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+    static int mouseLeftDown = 0;
+    static int prevXPos = -1;
+    static int prevYPos = -1;
+
     switch (uMsg)
     {
+    case WM_MOUSEMOVE:
+        {
+            const int xPos = GET_X_LPARAM(lParam);
+            const int yPos = GET_Y_LPARAM(lParam);
+
+            if (prevXPos < 0 || prevYPos < 0)
+            {
+                prevXPos = xPos;
+                prevYPos = yPos;
+                return 0;
+            }
+
+            if (mouseLeftDown)
+            {
+                const int dx = (xPos - prevXPos);
+                const int dy = (yPos - prevYPos);
+                if (abs(dx) < 20 || abs(dy) < 20)
+                {
+                    return 0;
+                }
+
+                RECT rect;
+                if (!GetWindowRect(hWnd, &rect))
+                {
+                    return 0;
+                }
+
+                const int newXPos = rect.left + dx;
+                const int newYPos = rect.top + dy;
+
+                SetWindowPos(hWnd, NULL, newXPos, newYPos, 0, 0, SWP_NOSIZE);
+            }
+
+            prevXPos = xPos;
+            prevYPos = yPos;
+
+            return 0;
+        }
+
+    case WM_LBUTTONUP:
+        mouseLeftDown = 0;
+        break;
+
+    case WM_LBUTTONDOWN:
+        mouseLeftDown = 1;
+        break;
+
+    case WM_CREATE:
+        break;
+
+//     case WM_NCCALCSIZE:
+//         return 0;
+
     case WM_CLOSE:
         DestroyWindow(hWnd);
         break;
